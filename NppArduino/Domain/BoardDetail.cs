@@ -22,5 +22,6 @@ namespace NppArduino.Domain
     {
         public string Value { get; set; }
         public string Value_Label { get; set; }
+        public bool Selected { get; set; }
     }
 }

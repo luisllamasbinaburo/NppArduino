@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,9 +31,8 @@ namespace Kbg.NppPluginNET
             InitializeComponent();
 
             InitControls();
-            WireEvents();
-
             LoadData();
+            WireEvents();
         }
 
         public frmMain(IScintillaGateway editor)
@@ -41,29 +41,10 @@ namespace Kbg.NppPluginNET
             InitializeComponent();
 
             InitControls();
-            WireEvents();
-
             LoadData();
+            WireEvents();
         }
 
-        private void InitControls()
-        {
-            cbComPorts.DataSource = new BindingSource { DataSource = Ports };
-            cbBaudRates.DataSource = new BindingSource { DataSource = BaudRates };
-            cbBoards.DataSource = new BindingSource { DataSource = Boards };
-            cbCpus.DataSource = new BindingSource { DataSource = Cpus };
-
-            cbBoards.DisplayMember = "Name";
-            cbBoards.ValueMember = "Fqbn";
-
-            cbCpus.DisplayMember = "Value_Label";
-            cbCpus.ValueMember = "Value";
-
-            btSend.Enabled = false;
-            txSendText.Enabled = false;
-        }
-
- 
         #endregion
 
         #region "Properties"
@@ -77,6 +58,23 @@ namespace Kbg.NppPluginNET
         public int[] BaudRates { get; set; } = { 9600, 14400, 19200, 28800, 38400, 57600, 115200 };
         #endregion
 
+        private void InitControls()
+        {
+            cbComPorts.DataSource = new BindingSource { DataSource = Ports };
+            cbBaudRates.DataSource = new BindingSource { DataSource = BaudRates };
+            cbBoards.DataSource = new BindingSource { DataSource = Boards };
+
+            cbBoards.DisplayMember = "Name";
+            cbBoards.ValueMember = "Fqbn";
+
+            btSend.Enabled = false;
+            txSendText.Enabled = false;
+
+            gvProperties.AutoGenerateColumns = false;
+            ((DataGridViewComboBoxColumn)gvProperties.Columns["Value"]).DisplayMember = "Value_Label";
+            ((DataGridViewComboBoxColumn)gvProperties.Columns["Value"]).ValueMember = "Value";
+        }
+
         private void WireEvents()
         {
             btRefresh.Click += btRefresh_Click;
@@ -88,7 +86,8 @@ namespace Kbg.NppPluginNET
             cbBoards.SelectedValueChanged += cbBoards_SelectedValueChanged;
         }
 
-
+ 
+  
         private void LoadData()
         {
             cbBoards.Enabled = false;
@@ -97,6 +96,7 @@ namespace Kbg.NppPluginNET
             LoadBoards();
             cbBoards.Enabled = true;
             cbComPorts.Enabled = true;
+            LoadBoardDetails(Boards.First());
         }
 
         private void LoadPorts()
@@ -114,7 +114,23 @@ namespace Kbg.NppPluginNET
             ((BindingSource)(cbBoards.DataSource)).ResetBindings(false);
 
         }
-        
+
+        private void LoadBoardDetails(Board board)
+        {
+            if (board == null) return;
+
+            BoardDetail = ArduinoCLI_API.GetBoardDetails(board.Fqbn);
+            gvProperties.DataSource = BoardDetail.Options;
+
+            foreach (DataGridViewRow row in gvProperties.Rows)
+            {
+                var option = row.DataBoundItem as BoardOption;
+                var cell = row.Cells["Value"] as DataGridViewComboBoxCell;
+                cell.DataSource = option.Values;
+                cell.Value = option.Values.First(v => v.Selected).Value;
+            }
+        }
+
         private void btRefresh_Click(object sender, EventArgs e)
         {
             LoadData();
@@ -124,13 +140,13 @@ namespace Kbg.NppPluginNET
         {
             var path = GetTargetPath();
             var board = cbBoards.SelectedValue?.ToString();
-            string cpu = cbCpus.SelectedValue?.ToString();
             if (string.IsNullOrWhiteSpace(board)) return;
-            if (System.IO.Path.GetExtension(path) != ".ino") return;
+            if (Path.GetExtension(path) != ".ino") return;
 
-            txOutput.Text = $"--- Compiling {System.IO.Path.GetFileName(path)} ---";
-
-            string rst = ArduinoCLI_API.CompileSketch(board, System.IO.Path.GetDirectoryName(path), cpu);
+            txOutput.Text = $"--- Compiling {Path.GetFileName(path)} ---";
+            serialPortDisconnect();
+            var options = GetCompileOptions();
+            string rst = ArduinoCLI_API.CompileSketch(board, Path.GetDirectoryName(path), options);
             txOutput.Text += '\n' + rst + '\n';
         }
 
@@ -139,13 +155,14 @@ namespace Kbg.NppPluginNET
             var path = GetTargetPath();
             var port = cbComPorts.SelectedValue?.ToString();
             var board = cbBoards.SelectedValue?.ToString();
-            string cpu = cbCpus.SelectedValue?.ToString();
-            if (System.IO.Path.GetExtension(path) != ".ino") return;
+            if (Path.GetExtension(path) != ".ino") return;
             if (string.IsNullOrWhiteSpace(port)) return;
             if (string.IsNullOrWhiteSpace(board)) return;
 
-            txOutput.Text = $"--- Uploading {System.IO.Path.GetFileName(path)} ---";
-            string rst = ArduinoCLI_API.UploadSketch(port, board, System.IO.Path.GetDirectoryName(path), cpu);
+            txOutput.Text = $"--- Uploading {Path.GetFileName(path)} ---";
+            serialPortDisconnect();
+            var options = GetCompileOptions();
+            string rst = ArduinoCLI_API.UploadSketch(port, board, Path.GetDirectoryName(path), options);
             txOutput.Text += '\n' + rst + '\n';
         }
 
@@ -160,13 +177,17 @@ namespace Kbg.NppPluginNET
             var currentBoard = cbBoards.SelectedItem as Board;
             if (currentBoard == null) return;
 
-            Cpus.Clear();
-            cbCpus.Enabled = false;
-            BoardDetail = ArduinoCLI_API.GetBoardDetails(currentBoard.Fqbn);
-            Cpus.AddRange(BoardDetail.Options.Where(o => o.Option == "cpu").SelectMany(o => o.Values));
-            ((BindingSource)(cbCpus.DataSource)).ResetBindings(false);
-            cbCpus.Enabled = true;
+        
+            LoadBoardDetails(currentBoard);
+        }
 
+        private CompileOption[] GetCompileOptions()
+        {
+            return gvProperties.Rows.Cast<DataGridViewRow>()
+                .Select(row => new CompileOption()
+                    { Option = ((BoardOption)row.DataBoundItem).Option,
+                    Value = row.Cells["Value"].Value.ToString()}
+                ).ToArray();
         }
 
 
@@ -212,6 +233,6 @@ namespace Kbg.NppPluginNET
             Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_GETFULLCURRENTPATH, 0, path);
 
             return path.ToString();
-        } 
+        }
     }
 }

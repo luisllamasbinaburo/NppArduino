@@ -71,6 +71,7 @@
     <Compile Include="Domain\ArduinoSerialPort.cs" />
     <Compile Include="Domain\Board.cs" />
     <Compile Include="Domain\BoardDetail.cs" />
+    <Compile Include="Domain\CompileOption.cs" />
     <Compile Include="PluginInfrastructure\ClikeStringArray.cs" />
     <Compile Include="PluginInfrastructure\DllExport\DllExportAttribute.cs" />
     <Compile Include="Forms\frmMain.cs">
@@ -113,6 +114,11 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\DataSources\NppArduino.Domain.BoardDetail.datasource" />
+    <None Include="Properties\DataSources\NppArduino.Domain.BoardOption.datasource" />
+    <None Include="Properties\DataSources\NppArduino.Domain.BoardOptionValue.datasource" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildProjectDirectory)\PluginInfrastructure\DllExport\NppPlugin.DllExport.targets" />

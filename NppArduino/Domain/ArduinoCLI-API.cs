@@ -17,15 +17,15 @@ namespace NppArduino.Domain
             return SerialPort.GetPortNames();
         }
 
-        public static string CompileSketch(string boardFqbn, string skechtFolder, string cpu = "")
+        public static string CompileSketch(string boardFqbn, string skechtFolder, CompileOption[] options = null)
         {
-            var cliCommand = $"compile --fqbn {boardFqbn}{(string.IsNullOrEmpty(cpu) ? "" : $":cpu={cpu}")} {skechtFolder}";
+            var cliCommand = $"compile --fqbn {boardFqbn}{(options == null ? "" : $":{string.Join<CompileOption>(",", options)}")} {skechtFolder}";
             return RunCliCommand(cliCommand);
         }
 
-        public static string UploadSketch(string port, string boardFqbn, string skechtFolder, string cpu = "")
+        public static string UploadSketch(string port, string boardFqbn, string skechtFolder, CompileOption[] options = null)
         {
-            string cliCommand = $"compile -u -p {port} --fqbn {boardFqbn}{(string.IsNullOrEmpty(cpu) ? "" : $":cpu={cpu}")} {skechtFolder}";
+            string cliCommand = $"compile -u -p {port} --fqbn {boardFqbn}{(options == null ? "" : $":{string.Join<CompileOption>(",", options)}")} {skechtFolder}";
             return RunCliCommand(cliCommand);
         }
 
@@ -129,11 +129,11 @@ namespace NppArduino.Domain
                 var cleanLine = line.Trim();
                 if (cleanLine.StartsWith("name: "))
                 {
-                    newBoard.Name = cleanLine.Replace("name: ", "").Replace(",", ""); ;
+                    newBoard.Name = cleanLine.Replace("name: ", "").Replace(",", "");
                 }
                 else if (cleanLine.StartsWith("FQBN: "))
                 {
-                    newBoard.Fqbn = cleanLine.Replace("FQBN: ", "").Replace(",", ""); ;
+                    newBoard.Fqbn = cleanLine.Replace("FQBN: ", "").Replace(",", "");
                     rst.Add(newBoard);
                     newBoard = new Board();
                 }
@@ -157,7 +157,7 @@ namespace NppArduino.Domain
                 if (cleanLine.StartsWith("option: "))
                 {
                     boardOption = new BoardOption();
-                    boardOption.Option = cleanLine.Replace("option: ", "").Replace(",", "").Replace(",", ""); ;
+                    boardOption.Option = cleanLine.Replace("option: ", "").Replace(",", "").Replace(",", "");
                 }
                 else if (cleanLine.StartsWith("option_label: "))
                 {
@@ -166,11 +166,15 @@ namespace NppArduino.Domain
                 else if (cleanLine.StartsWith("value: "))
                 {
                     boardOptionValue = new BoardOptionValue();
-                    boardOptionValue.Value = cleanLine.Replace("value: ", "").Replace(",", "").Replace(",", ""); ;
+                    boardOptionValue.Value = cleanLine.Replace("value: ", "").Replace(",", "").Replace(",", "");
                 }
                 else if (cleanLine.StartsWith("value_label: "))
                 {
-                    if (boardOptionValue != null) boardOptionValue.Value_Label = cleanLine.Replace("value_label: ", "").Replace(",", ""); ;
+                    if (boardOptionValue != null) boardOptionValue.Value_Label = cleanLine.Replace("value_label: ", "").Replace(",", "");
+                }
+                else if (cleanLine.StartsWith("selected: "))
+                {
+                    if (boardOptionValue != null) boardOptionValue.Selected = true;
                 }
                 else if (cleanLine.StartsWith("}"))
                 {
