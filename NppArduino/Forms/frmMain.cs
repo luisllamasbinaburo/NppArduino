@@ -97,7 +97,6 @@ namespace Kbg.NppPluginNET
             LoadBoards();
             cbBoards.Enabled = true;
             cbComPorts.Enabled = true;
-            LoadBoardDetails(Boards.First());
         }
 
         private void LoadPorts()
@@ -190,7 +189,8 @@ namespace Kbg.NppPluginNET
                     Value = row.Cells["Value"].Value.ToString()}
                 ).ToArray();
 
-            return compilerOptions.Length == 0 ? null : compilerOptions;
+            if (compilerOptions.Length == 0) return null;
+            return compilerOptions;
         }
 
 
