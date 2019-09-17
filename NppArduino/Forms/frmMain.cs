@@ -35,6 +35,17 @@ namespace Kbg.NppPluginNET
             LoadData();
         }
 
+        public frmMain(IScintillaGateway editor)
+        {
+            _editor = editor;
+            InitializeComponent();
+
+            InitControls();
+            WireEvents();
+
+            LoadData();
+        }
+
         private void InitControls()
         {
             cbComPorts.DataSource = new BindingSource { DataSource = Ports };
@@ -52,16 +63,7 @@ namespace Kbg.NppPluginNET
             txSendText.Enabled = false;
         }
 
-        public frmMain(IScintillaGateway editor)
-        {
-            _editor = editor;
-            InitializeComponent();
-
-            InitControls();
-            WireEvents();
-
-            LoadData();
-        }
+ 
         #endregion
 
         #region "Properties"
@@ -121,8 +123,8 @@ namespace Kbg.NppPluginNET
         private void btCompile_Click(object sender, EventArgs e)
         {
             var path = GetTargetPath();
-            var board = cbBoards.SelectedValue.ToString();
-            string cpu = cbCpus.SelectedValue.ToString();
+            var board = cbBoards.SelectedValue?.ToString();
+            string cpu = cbCpus.SelectedValue?.ToString();
             if (string.IsNullOrWhiteSpace(board)) return;
             if (System.IO.Path.GetExtension(path) != ".ino") return;
 
@@ -135,9 +137,9 @@ namespace Kbg.NppPluginNET
         private void btUpload_Click(object sender, EventArgs e)
         {
             var path = GetTargetPath();
-            var port = cbComPorts.SelectedValue.ToString();
-            var board = cbBoards.SelectedValue.ToString();
-            string cpu = cbCpus.SelectedValue.ToString();
+            var port = cbComPorts.SelectedValue?.ToString();
+            var board = cbBoards.SelectedValue?.ToString();
+            string cpu = cbCpus.SelectedValue?.ToString();
             if (System.IO.Path.GetExtension(path) != ".ino") return;
             if (string.IsNullOrWhiteSpace(port)) return;
             if (string.IsNullOrWhiteSpace(board)) return;
