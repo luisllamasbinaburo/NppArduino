@@ -49,11 +49,13 @@
             this.btConnect = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.cbBaudRates = new System.Windows.Forms.ComboBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.cbCpus = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // btRefresh
             // 
-            this.btRefresh.Location = new System.Drawing.Point(12, 74);
+            this.btRefresh.Location = new System.Drawing.Point(12, 109);
             this.btRefresh.Name = "btRefresh";
             this.btRefresh.Size = new System.Drawing.Size(75, 23);
             this.btRefresh.TabIndex = 1;
@@ -63,7 +65,7 @@
             // btCompile
             // 
             this.btCompile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btCompile.Location = new System.Drawing.Point(132, 74);
+            this.btCompile.Location = new System.Drawing.Point(132, 109);
             this.btCompile.Name = "btCompile";
             this.btCompile.Size = new System.Drawing.Size(75, 23);
             this.btCompile.TabIndex = 3;
@@ -73,7 +75,7 @@
             // btUpload
             // 
             this.btUpload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btUpload.Location = new System.Drawing.Point(213, 74);
+            this.btUpload.Location = new System.Drawing.Point(213, 109);
             this.btUpload.Name = "btUpload";
             this.btUpload.Size = new System.Drawing.Size(75, 23);
             this.btUpload.TabIndex = 4;
@@ -84,6 +86,8 @@
             // 
             this.cbComPorts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbComPorts.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.cbComPorts.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.cbComPorts.FormattingEnabled = true;
             this.cbComPorts.Location = new System.Drawing.Point(57, 14);
             this.cbComPorts.Name = "cbComPorts";
@@ -94,6 +98,8 @@
             // 
             this.cbBoards.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbBoards.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.cbBoards.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.cbBoards.FormattingEnabled = true;
             this.cbBoards.Location = new System.Drawing.Point(57, 41);
             this.cbBoards.Name = "cbBoards";
@@ -104,9 +110,9 @@
             // 
             this.txOutput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txOutput.Location = new System.Drawing.Point(12, 129);
+            this.txOutput.Location = new System.Drawing.Point(12, 162);
             this.txOutput.Name = "txOutput";
-            this.txOutput.Size = new System.Drawing.Size(276, 222);
+            this.txOutput.Size = new System.Drawing.Size(276, 189);
             this.txOutput.TabIndex = 99;
             this.txOutput.Text = "";
             // 
@@ -180,7 +186,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 111);
+            this.label4.Location = new System.Drawing.Point(13, 144);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(42, 13);
             this.label4.TabIndex = 107;
@@ -196,11 +202,34 @@
             this.cbBaudRates.Size = new System.Drawing.Size(107, 21);
             this.cbBaudRates.TabIndex = 108;
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(12, 74);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(29, 13);
+            this.label5.TabIndex = 110;
+            this.label5.Text = "Cpu:";
+            // 
+            // cbCpus
+            // 
+            this.cbCpus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbCpus.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.cbCpus.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.cbCpus.FormattingEnabled = true;
+            this.cbCpus.Location = new System.Drawing.Point(57, 68);
+            this.cbCpus.Name = "cbCpus";
+            this.cbCpus.Size = new System.Drawing.Size(231, 21);
+            this.cbCpus.TabIndex = 109;
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(300, 628);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.cbCpus);
             this.Controls.Add(this.cbBaudRates);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.btConnect);
@@ -240,5 +269,7 @@
         private System.Windows.Forms.Button btConnect;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ComboBox cbBaudRates;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.ComboBox cbCpus;
     }
 }

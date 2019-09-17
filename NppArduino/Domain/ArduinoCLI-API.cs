@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
+using System.Threading.Tasks;
 using Kbg.NppPluginNET;
 
 
@@ -14,15 +17,15 @@ namespace NppArduino.Domain
             return SerialPort.GetPortNames();
         }
 
-        public static string CompileSketch(string boardFqbn, string skechtFolder)
+        public static string CompileSketch(string boardFqbn, string skechtFolder, string cpu = "")
         {
-            var cliCommand = $"compile --fqbn {boardFqbn} {skechtFolder}";
+            var cliCommand = $"compile --fqbn {boardFqbn}{(string.IsNullOrEmpty(cpu) ? "" : $":cpu={cpu}")} {skechtFolder}";
             return RunCliCommand(cliCommand);
         }
 
-        public static string UploadSketch(string port, string boardFqbn, string skechtFolder)
+        public static string UploadSketch(string port, string boardFqbn, string skechtFolder, string cpu = "")
         {
-            string cliCommand = $"compile -u -p {port} --fqbn {boardFqbn} {skechtFolder}";
+            string cliCommand = $"compile -u -p {port} --fqbn {boardFqbn}{(string.IsNullOrEmpty(cpu) ? "" : $":cpu={cpu}")} {skechtFolder}";
             return RunCliCommand(cliCommand);
         }
 
@@ -44,28 +47,74 @@ namespace NppArduino.Domain
             return json;
         }
 
-        public static string SetBoardConfig(string boardFqbn)
+        public static BoardDetail GetBoardDetails(string boardFqbn)
         {
             string cliCommand = $"board details {boardFqbn}";
-            return RunCliCommand(cliCommand);
+            var json = RunCliCommand(cliCommand);
+
+            var boardDetails = ParseDetails(json);
+            return boardDetails;
         }
 
 
+        internal static Task<string> RunCliCommandAsync(string arguments)
+        {
+            var tcs = new TaskCompletionSource<string>();
+
+            var process = new System.Diagnostics.Process
+            {
+                StartInfo = {
+                    FileName = "arduino-cli",
+                    Arguments = arguments + " --format json",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                 },
+                EnableRaisingEvents = true
+            };
+
+            var output = "";
+            var errors = "";
+            process.OutputDataReceived += (s, e) => { output += e.Data; };
+            process.ErrorDataReceived += (s, e) => { errors += e.Data; };
+
+            process.Exited += (s, e) =>
+            {
+                tcs.SetResult(output);
+                process.Dispose();
+            };
+
+            bool started = process.Start();
+            if (!started)
+            {
+                throw new InvalidOperationException("Could not start process: " + process);
+            }
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            Debug.WriteLine("run");
+            return tcs.Task;
+        }
+
         internal static string RunCliCommand(string arguments)
         {
+         
             var process = new System.Diagnostics.Process {
                 StartInfo = {
                     FileName = "arduino-cli",
                     Arguments = arguments + " --format json",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
-                }
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                 }
             };
 
             process.Start();
             string strOutput = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
-
+   
             return strOutput;
         }
 
@@ -84,13 +133,61 @@ namespace NppArduino.Domain
                 }
                 else if (cleanLine.StartsWith("FQBN: "))
                 {
-                    newBoard.Fqbn = cleanLine.Replace("FQBN: ", "");
+                    newBoard.Fqbn = cleanLine.Replace("FQBN: ", "").Replace(",", ""); ;
                     rst.Add(newBoard);
                     newBoard = new Board();
                 }
             }
 
             return rst.ToArray();
+        }
+
+        private static BoardDetail ParseDetails(string json)
+        {
+            var boardDetail = new BoardDetail();
+
+            string[] lines = json.Replace("\"", "").Split('\n');
+
+            BoardOption boardOption = null;
+            BoardOptionValue boardOptionValue = null;
+            foreach (string line in lines)
+            {
+                var cleanLine = line.Trim();
+
+                if (cleanLine.StartsWith("option: "))
+                {
+                    boardOption = new BoardOption();
+                    boardOption.Option = cleanLine.Replace("option: ", "").Replace(",", "").Replace(",", ""); ;
+                }
+                else if (cleanLine.StartsWith("option_label: "))
+                {
+                    if(boardOption != null) boardOption.Option_Label = cleanLine.Replace("option_label: ", "").Replace(",", "");
+                }
+                else if (cleanLine.StartsWith("value: "))
+                {
+                    boardOptionValue = new BoardOptionValue();
+                    boardOptionValue.Value = cleanLine.Replace("value: ", "").Replace(",", "").Replace(",", ""); ;
+                }
+                else if (cleanLine.StartsWith("value_label: "))
+                {
+                    if (boardOptionValue != null) boardOptionValue.Value_Label = cleanLine.Replace("value_label: ", "").Replace(",", ""); ;
+                }
+                else if (cleanLine.StartsWith("}"))
+                {
+                    if(boardOptionValue != null)
+                    {
+                        boardOption?.Values.Add(boardOptionValue);
+                        boardOptionValue = null;
+                    }
+                    else if (boardOption != null)
+                    {
+                        boardDetail.Options.Add(boardOption);
+                        boardOption = null;
+                    }
+                }
+            }
+
+            return boardDetail;
         }
     }
 }
