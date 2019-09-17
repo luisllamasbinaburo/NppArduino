@@ -90,10 +90,13 @@ namespace NppArduino
                 Marshal.StructureToPtr(nppTbData, ptrNppTbData, false);
 
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_DMMREGASDCKDLG, 0, ptrNppTbData);
+
+                _form.Init();
             }
             else
             {
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_DMMSHOW, 0, _form.Handle);
+                _form.Init();
             }
         }
     }

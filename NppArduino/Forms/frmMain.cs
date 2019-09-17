@@ -31,17 +31,16 @@ namespace Kbg.NppPluginNET
             InitializeComponent();
 
             InitControls();
-            LoadData();
             WireEvents();
         }
 
+   
         public frmMain(IScintillaGateway editor)
         {
             _editor = editor;
             InitializeComponent();
 
             InitControls();
-            LoadData();
             WireEvents();
         }
 
@@ -86,8 +85,10 @@ namespace Kbg.NppPluginNET
             cbBoards.SelectedValueChanged += cbBoards_SelectedValueChanged;
         }
 
- 
-  
+        public void Init()
+        {
+            LoadData();
+        }
         private void LoadData()
         {
             cbBoards.Enabled = false;
@@ -183,11 +184,13 @@ namespace Kbg.NppPluginNET
 
         private CompileOption[] GetCompileOptions()
         {
-            return gvProperties.Rows.Cast<DataGridViewRow>()
+            var compilerOptions = gvProperties.Rows.Cast<DataGridViewRow>()
                 .Select(row => new CompileOption()
                     { Option = ((BoardOption)row.DataBoundItem).Option,
                     Value = row.Cells["Value"].Value.ToString()}
                 ).ToArray();
+
+            return compilerOptions.Length == 0 ? null : compilerOptions;
         }
 
 
