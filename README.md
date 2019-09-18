@@ -1,7 +1,7 @@
 # NppArduino
 Notepad++ plugin for Arduino-CLI
 
-![Image of Yaktocat](https://github.com/luisllamasbinaburo/NppArduino/blob/master/screenshots/npparduino.png)
+![Image](https://github.com/luisllamasbinaburo/NppArduino/blob/master/screenshots/npparduino.png)
 
 It allow to compile and upload Arduino sketch. It also has a small Serial Port monitor tool.
 
